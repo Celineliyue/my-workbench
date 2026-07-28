@@ -4,13 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="theme-color" content="#6c5ce7">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>我的工作台 | Personal Workbench</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=20260728a">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
 </head>
 <body>
   <div class="app">
-    <!-- 侧边栏 -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <span style="font-size:22px;">🏠</span>
@@ -18,14 +20,12 @@
       </div>
       <nav class="sidebar-nav" id="sidebarNav"></nav>
       <div style="padding:12px;border-top:1px solid var(--border);">
-        <div class="text-xs text-muted text-center">v1.0.0 · 本地存储</div>
+        <div class="text-xs text-muted text-center">v1.1.0 · 本地存储</div>
       </div>
     </aside>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- 主内容 -->
     <div class="main">
-      <!-- 顶栏 -->
       <header class="topbar">
         <button class="menu-toggle" id="menuToggle">☰</button>
         <div class="topbar-title" id="pageTitle">工作台</div>
@@ -35,42 +35,31 @@
         </div>
       </header>
 
-      <!-- 内容区 -->
       <main class="content">
-        <!-- 工作区 -->
         <div class="page" id="page-work-calendar"></div>
         <div class="page" id="page-work-todo"></div>
         <div class="page" id="page-work-knowledge"></div>
-
-        <!-- 自媒体运营 -->
         <div class="page" id="page-media-dashboard"></div>
         <div class="page" id="page-media-hotspot"></div>
         <div class="page" id="page-media-topic"></div>
         <div class="page" id="page-media-data"></div>
         <div class="page" id="page-media-quarterly"></div>
-
-        <!-- 个人成长 -->
         <div class="page" id="page-grow-finance"></div>
         <div class="page" id="page-grow-sidehustle"></div>
         <div class="page" id="page-grow-reading"></div>
         <div class="page" id="page-grow-record"></div>
-
-        <!-- 个人计划 -->
         <div class="page" id="page-plan-list"></div>
-
-        <!-- 系统 -->
         <div class="page" id="page-system-ai"></div>
         <div class="page" id="page-system-settings"></div>
       </main>
     </div>
   </div>
 
-  <!-- 脚本 -->
-  <script src="assets/js/store.js"></script>
-  <script src="assets/js/modules/work.js"></script>
-  <script src="assets/js/modules/media.js"></script>
-  <script src="assets/js/modules/grow.js"></script>
-  <script src="assets/js/modules/plan-system.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/store.js?v=20260728a"></script>
+  <script src="assets/js/modules/work.js?v=20260728a"></script>
+  <script src="assets/js/modules/media.js?v=20260728a"></script>
+  <script src="assets/js/modules/grow.js?v=20260728a"></script>
+  <script src="assets/js/modules/plan-system.js?v=20260728a"></script>
+  <script src="assets/js/app.js?v=20260728a"></script>
 </body>
 </html>
