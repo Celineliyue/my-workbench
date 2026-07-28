@@ -646,3 +646,181 @@ body {
 .w-full { width: 100%; }
 .text-right { text-align: right; }
 .cursor-pointer { cursor: pointer; }
+
+/* ===== 多色标签系统 ===== */
+.tag-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tag-label:hover { transform: scale(1.05); }
+.tag-label .tag-remove {
+  margin-left: 2px;
+  opacity: 0.6;
+  font-size: 13px;
+  line-height: 1;
+}
+.tag-label .tag-remove:hover { opacity: 1; }
+
+/* 标签颜色组 */
+.tag-color-0 { background: rgba(108,92,231,0.12); color: #6c5ce7; }
+.tag-color-1 { background: rgba(253,121,168,0.12); color: #e84393; }
+.tag-color-2 { background: rgba(0,184,148,0.12); color: #00b894; }
+.tag-color-3 { background: rgba(253,203,110,0.15); color: #d4a017; }
+.tag-color-4 { background: rgba(9,132,227,0.12); color: #0984e3; }
+.tag-color-5 { background: rgba(225,112,85,0.12); color: #e17055; }
+.tag-color-6 { background: rgba(166,124,0,0.12); color: #a67c00; }
+.tag-color-7 { background: rgba(45,52,54,0.1); color: #2d3436; }
+
+/* 标签选择器 */
+.tag-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  min-height: 40px;
+  align-items: center;
+}
+.tag-selector .tag-label { cursor: pointer; }
+.tag-selector .tag-label.selected {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px currentColor;
+}
+.tag-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.tag-input-row .input { flex: 1; }
+
+/* 记录卡片增强 */
+.record-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 4px solid var(--primary);
+}
+.record-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.record-card .record-title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.record-card .record-excerpt {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.record-card .record-source {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 8px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.record-card .record-thought {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(108,92,231,0.06), rgba(253,121,168,0.06));
+  border-radius: 8px;
+  margin-top: 8px;
+  border-left: 3px solid var(--accent);
+}
+.record-card .record-images {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.record-card .record-images img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.record-card .record-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.record-card .record-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.record-card .record-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* 来源链接输入 */
+.source-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* 多图上传预览 */
+.image-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.image-preview-grid .preview-item {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.image-preview-grid .preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.image-preview-grid .preview-item .remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background: var(--danger);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  border: 2px solid var(--bg-card);
+}

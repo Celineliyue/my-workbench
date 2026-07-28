@@ -738,21 +738,38 @@ const GrowModule = {
   // ===== 记录库 =====
   record: {
     currentCategory: 'all',
+    currentTag: null,
+    // 预设标签（带颜色索引）
+    presetTags: [
+      { name: '小思考', color: 0 },
+      { name: '金句摘抄', color: 1 },
+      { name: '读书笔记', color: 2 },
+      { name: '生活感悟', color: 3 },
+      { name: '工作思考', color: 4 },
+      { name: '日记', color: 5 },
+      { name: '副业灵感', color: 6 },
+      { name: '复盘总结', color: 7 },
+    ],
 
     render() {
       const el = document.getElementById('page-grow-record');
       const records = Store.get('records') || [];
-      const categories = this.getCategories();
+      const allTags = this.getAllTags();
 
       el.innerHTML = `
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div class="flex gap-2 flex-wrap">
-            <button class="btn btn-sm ${this.currentCategory === 'all' ? 'btn-primary' : ''}" onclick="GrowModule.record.setCategory('all')">全部 (${records.length})</button>
-            ${categories.map(c => `
-              <button class="btn btn-sm ${this.currentCategory === c ? 'btn-primary' : ''}" onclick="GrowModule.record.setCategory('${c}')">${c} (${records.filter(r=>r.category===c).length})</button>
+            <button class="btn btn-sm ${this.currentCategory === 'all' && !this.currentTag ? 'btn-primary' : ''}" onclick="GrowModule.record.setCategory('all')">全部 (${records.length})</button>
+            ${allTags.map(t => `
+              <button class="btn btn-sm ${this.currentTag === t.name ? 'btn-primary' : ''}" onclick="GrowModule.record.setTag('${t.name}')">
+                ${t.name} (${records.filter(r => r.tags && r.tags.includes(t.name)).length})
+              </button>
             `).join('')}
           </div>
-          <button class="btn btn-primary btn-sm" onclick="GrowModule.record.add()">+ 新建记录</button>
+          <div class="flex gap-2">
+            <div class="ai-badge" onclick="GrowModule.record.aiImport()">🤖 AI导入</div>
+            <button class="btn btn-primary btn-sm" onclick="GrowModule.record.add()">+ 新建记录</button>
+          </div>
         </div>
         <div id="recordsList" class="grid grid-auto"></div>
       `;
@@ -760,21 +777,45 @@ const GrowModule = {
       this.renderList();
     },
 
-    getCategories() {
+    // 获取所有标签（合并预设和自定义）
+    getAllTags() {
       const records = Store.get('records') || [];
-      return [...new Set(records.map(r => r.category).filter(Boolean))];
+      const usedTags = new Set();
+      records.forEach(r => {
+        if (r.tags) r.tags.forEach(t => usedTags.add(t));
+      });
+      // 合并预设标签和已使用标签
+      const result = [...this.presetTags];
+      usedTags.forEach(name => {
+        if (!result.find(t => t.name === name)) {
+          result.push({ name, color: Math.floor(Math.random() * 8) });
+        }
+      });
+      return result;
+    },
+
+    // 获取标签颜色
+    getTagColor(name) {
+      const tag = this.getAllTags().find(t => t.name === name);
+      return tag ? tag.color : 0;
     },
 
     setCategory(cat) {
       this.currentCategory = cat;
+      this.currentTag = null;
+      this.render();
+    },
+
+    setTag(tag) {
+      this.currentTag = this.currentTag === tag ? null : tag;
       this.render();
     },
 
     renderList() {
       const container = document.getElementById('recordsList');
       let records = Store.get('records') || [];
-      if (this.currentCategory !== 'all') {
-        records = records.filter(r => r.category === this.currentCategory);
+      if (this.currentTag) {
+        records = records.filter(r => r.tags && r.tags.includes(this.currentTag));
       }
       records.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -783,61 +824,331 @@ const GrowModule = {
           <div class="empty-state" style="grid-column:1/-1;">
             <div class="icon">✍️</div>
             <div class="title">记录库还是空的</div>
-            <div class="desc">记录你看到的金句、思考、日记</div>
+            <div class="desc">记录你看到的金句、思考、日记<br>支持多标签、来源链接、个人思考</div>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = records.map(r => `
-        <div class="note-card" style="border-left-color:${r.color||'var(--success)'};" onclick="GrowModule.record.view('${r.id}')">
-          <div class="note-preview" style="-webkit-line-clamp:4;">${r.content}</div>
-          ${r.image ? `<img src="${r.image}" style="width:100%;border-radius:6px;margin-top:8px;max-height:100px;object-fit:cover;">` : ''}
-          <div class="note-meta">
-            ${r.category ? `<span class="tag tag-success">${r.category}</span>` : ''}
-            <span>${Utils.timeAgo(r.createdAt)}</span>
+      container.innerHTML = records.map(r => {
+        const tagsHtml = (r.tags || []).map(t => `<span class="tag-label tag-color-${this.getTagColor(t)}">${t}</span>`).join('');
+        const imagesHtml = (r.images || []).length ? `
+          <div class="record-images">
+            ${r.images.slice(0, 4).map(img => `<img src="${img}" onclick="event.stopPropagation();GrowModule.record.viewImage('${img}')">`).join('')}
+            ${r.images.length > 4 ? `<div style="width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:var(--bg-hover);border-radius:6px;font-size:13px;color:var(--text-muted);">+${r.images.length - 4}</div>` : ''}
           </div>
-        </div>
-      `).join('');
+        ` : '';
+        return `
+          <div class="record-card" style="border-left-color:${r.color||'var(--primary)'};" onclick="GrowModule.record.view('${r.id}')">
+            ${r.title ? `<div class="record-title">${r.title}</div>` : ''}
+            ${r.source ? `<div class="record-source">📎 ${r.sourceTitle || r.source}</div>` : ''}
+            <div class="record-excerpt">${r.content}</div>
+            ${r.thought ? `<div class="record-thought">💭 ${r.thought}</div>` : ''}
+            ${imagesHtml}
+            <div class="record-footer">
+              <div class="record-tags">${tagsHtml}</div>
+              <div class="record-time">${Utils.formatDate(r.createdAt, 'YYYY-MM-DD HH:mm')}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     },
 
     add() {
-      const categories = this.getCategories();
-      const defaultCats = ['金句摘抄', '读书笔记', '生活感悟', '工作思考', '日记'];
+      const allTags = this.getAllTags();
+      this._editingImages = [];
 
       Modal.show({
         title: '新建记录',
         content: `
           <div class="flex flex-col gap-3">
             <div>
-              <label class="text-sm text-secondary mb-2 block">分类</label>
-              <input class="input" id="rCategory" list="rCategoryList" placeholder="选择或输入分类" value="金句摘抄">
-              <datalist id="rCategoryList">
-                ${[...new Set([...defaultCats, ...categories])].map(c => `<option value="${c}">`).join('')}
-              </datalist>
+              <label class="text-sm text-secondary mb-2 block">标题（可选）</label>
+              <input class="input" id="rTitle" placeholder="给这条记录起个标题...">
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">标签</label>
+              <div class="tag-selector" id="rTagSelector">
+                ${allTags.map(t => `<span class="tag-label tag-color-${t.color}" data-tag="${t.name}" onclick="GrowModule.record.toggleTag(this)">${t.name}</span>`).join('')}
+              </div>
+              <div class="tag-input-row">
+                <input class="input" id="rNewTag" placeholder="输入新标签名称..." style="font-size:12px;">
+                <button class="btn btn-sm" onclick="GrowModule.record.addNewTag()">+ 添加</button>
+              </div>
             </div>
             <div>
               <label class="text-sm text-secondary mb-2 block">内容</label>
-              <textarea class="textarea" id="rContent" placeholder="记录一段话、思考、日记..." style="min-height:150px;" autofocus></textarea>
+              <textarea class="textarea" id="rContent" placeholder="记录一段话、金句、笔记..." style="min-height:120px;" autofocus></textarea>
             </div>
             <div>
-              <label class="text-sm text-secondary mb-2 block">添加图片（可选）</label>
-              <input type="file" accept="image/*" id="rImage" class="input" onchange="GrowModule.record.previewImage(this)">
-              <img id="rImagePreview" style="display:none;max-width:100%;border-radius:8px;margin-top:8px;">
+              <label class="text-sm text-secondary mb-2 block">个人思考（可选）</label>
+              <textarea class="textarea" id="rThought" placeholder="写下你对这段内容的思考、感悟..." style="min-height:80px;"></textarea>
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">来源链接（可选）</label>
+              <div class="source-input-row">
+                <input class="input" id="rSource" placeholder="粘贴链接（小红书/微博/网页等）">
+              </div>
+              <input class="input mt-2" id="rSourceTitle" placeholder="来源标题（如：小红书@作者）" style="font-size:12px;">
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">添加图片（可选，可多选）</label>
+              <input type="file" accept="image/*" multiple id="rImages" class="input" onchange="GrowModule.record.handleImages(this)">
+              <div class="image-preview-grid" id="rImagePreview"></div>
             </div>
           </div>
         `,
         onConfirm: () => {
+          const title = document.getElementById('rTitle').value.trim();
           const content = document.getElementById('rContent').value.trim();
           if (!content) { Toast.show('请输入内容', 'error'); return false; }
-          const category = document.getElementById('rCategory').value.trim() || '其他';
-          const img = document.getElementById('rImagePreview');
+          const thought = document.getElementById('rThought').value.trim();
+          const source = document.getElementById('rSource').value.trim();
+          const sourceTitle = document.getElementById('rSourceTitle').value.trim();
+          const tags = Array.from(document.querySelectorAll('#rTagSelector .tag-label.selected')).map(el => el.dataset.tag);
+
           const records = Store.get('records') || [];
           records.push({
             id: Utils.uid(),
-            content, category,
-            image: (img.src && img.style.display !== 'none') ? img.src : null,
-            color: ['#00b894','#6c5ce7','#fd79a8','#fdcb6e','#0984e3'][Math.floor(Math.random()*5)],
+            title, content, thought,
+            source, sourceTitle,
+            tags,
+            images: this._editingImages || [],
+            color: ['#6c5ce7','#fd79a8','#00b894','#fdcb6e','#0984e3','#e17055'][Math.floor(Math.random()*6)],
+            createdAt: new Date().toISOString()
+          });
+          Store.set('records', records);
+          Toast.show('记录已保存', 'success');
+          this._editingImages = [];
+          this.render();
+          return true;
+        }
+      });
+    },
+
+    // 标签选择切换
+    toggleTag(el) {
+      el.classList.toggle('selected');
+    },
+
+    // 添加新标签
+    addNewTag() {
+      const input = document.getElementById('rNewTag');
+      const name = input.value.trim();
+      if (!name) return;
+      const selector = document.getElementById('rTagSelector');
+      // 检查是否已存在
+      if (selector.querySelector(`[data-tag="${name}"]`)) {
+        Toast.show('标签已存在', 'warning');
+        return;
+      }
+      const colorIdx = Math.floor(Math.random() * 8);
+      const tagEl = document.createElement('span');
+      tagEl.className = `tag-label tag-color-${colorIdx} selected`;
+      tagEl.dataset.tag = name;
+      tagEl.onclick = function() { this.classList.toggle('selected'); };
+      tagEl.textContent = name;
+      selector.appendChild(tagEl);
+      input.value = '';
+    },
+
+    // 处理多图上传
+    _editingImages: [],
+    handleImages(input) {
+      const files = Array.from(input.files);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this._editingImages.push(e.target.result);
+          this.renderImagePreview();
+        };
+        reader.readAsDataURL(file);
+      });
+    },
+
+    renderImagePreview() {
+      const container = document.getElementById('rImagePreview');
+      if (!container) return;
+      container.innerHTML = this._editingImages.map((img, i) => `
+        <div class="preview-item">
+          <img src="${img}">
+          <div class="remove-btn" onclick="GrowModule.record.removeImage(${i})">×</div>
+        </div>
+      `).join('');
+    },
+
+    removeImage(index) {
+      this._editingImages.splice(index, 1);
+      this.renderImagePreview();
+    },
+
+    view(id) {
+      const records = Store.get('records') || [];
+      const record = records.find(r => r.id === id);
+      if (!record) return;
+
+      const tagsHtml = (record.tags || []).map(t => `<span class="tag-label tag-color-${this.getTagColor(t)}">${t}</span>`).join('');
+
+      Modal.show({
+        title: record.title || '记录详情',
+        content: `
+          <div class="flex flex-col gap-3">
+            ${tagsHtml ? `<div class="flex gap-2 flex-wrap">${tagsHtml}</div>` : ''}
+            ${record.source ? `<div class="record-source">📎 ${record.sourceTitle || record.source}${record.source.startsWith('http') ? ` <a href="${record.source}" target="_blank" style="color:var(--primary);text-decoration:none;font-size:11px;">打开 ↗</a>` : ''}</div>` : ''}
+            <div style="font-size:14px;line-height:1.8;white-space:pre-wrap;">${record.content}</div>
+            ${record.thought ? `<div class="record-thought">💭 ${record.thought}</div>` : ''}
+            ${(record.images||[]).length ? `<div class="record-images">${record.images.map(img => `<img src="${img}" onclick="GrowModule.record.viewImage('${img}')" style="width:100%;height:auto;max-height:200px;">`).join('')}</div>` : ''}
+            <div class="text-xs text-muted">📅 ${Utils.formatDate(record.createdAt, 'YYYY-MM-DD HH:mm')}</div>
+          </div>
+        `,
+        confirmText: '编辑',
+        onConfirm: () => { this.edit(id); return true; }
+      });
+    },
+
+    viewImage(src) {
+      Modal.show({
+        title: '图片',
+        content: `<img src="${src}" style="width:100%;border-radius:8px;">`,
+        confirmText: '关闭',
+        onConfirm: () => true
+      });
+    },
+
+    edit(id) {
+      const records = Store.get('records') || [];
+      const record = records.find(r => r.id === id);
+      if (!record) return;
+      const allTags = this.getAllTags();
+      this._editingImages = [...(record.images || [])];
+
+      // 合并已有标签
+      const existingTags = record.tags || [];
+      existingTags.forEach(name => {
+        if (!allTags.find(t => t.name === name)) {
+          allTags.push({ name, color: this.getTagColor(name) });
+        }
+      });
+
+      Modal.show({
+        title: '编辑记录',
+        content: `
+          <div class="flex flex-col gap-3">
+            <input class="input" id="rTitle" value="${record.title||''}" placeholder="标题">
+            <div>
+              <label class="text-sm text-secondary mb-2 block">标签</label>
+              <div class="tag-selector" id="rTagSelector">
+                ${allTags.map(t => `<span class="tag-label tag-color-${t.color} ${existingTags.includes(t.name) ? 'selected' : ''}" data-tag="${t.name}" onclick="GrowModule.record.toggleTag(this)">${t.name}</span>`).join('')}
+              </div>
+              <div class="tag-input-row">
+                <input class="input" id="rNewTag" placeholder="新标签..." style="font-size:12px;">
+                <button class="btn btn-sm" onclick="GrowModule.record.addNewTag()">+ 添加</button>
+              </div>
+            </div>
+            <textarea class="textarea" id="rContent" style="min-height:120px;">${record.content}</textarea>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">个人思考</label>
+              <textarea class="textarea" id="rThought" style="min-height:80px;">${record.thought||''}</textarea>
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">来源链接</label>
+              <input class="input" id="rSource" value="${record.source||''}">
+              <input class="input mt-2" id="rSourceTitle" value="${record.sourceTitle||''}" style="font-size:12px;">
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">图片</label>
+              <input type="file" accept="image/*" multiple id="rImages" class="input" onchange="GrowModule.record.handleImages(this)">
+              <div class="image-preview-grid" id="rImagePreview"></div>
+            </div>
+          </div>
+        `,
+        onConfirm: () => {
+          record.title = document.getElementById('rTitle').value.trim();
+          record.content = document.getElementById('rContent').value.trim();
+          record.thought = document.getElementById('rThought').value.trim();
+          record.source = document.getElementById('rSource').value.trim();
+          record.sourceTitle = document.getElementById('rSourceTitle').value.trim();
+          record.tags = Array.from(document.querySelectorAll('#rTagSelector .tag-label.selected')).map(el => el.dataset.tag);
+          record.images = this._editingImages;
+          record.updatedAt = new Date().toISOString();
+          Store.set('records', records);
+          Toast.show('已更新', 'success');
+          this._editingImages = [];
+          this.render();
+          return true;
+        }
+      });
+
+      this.renderImagePreview();
+    },
+
+    // AI 导入 - 从微信对话中粘贴内容
+    aiImport() {
+      const allTags = this.getAllTags();
+      this._editingImages = [];
+
+      Modal.show({
+        title: '🤖 AI 导入记录',
+        content: `
+          <div class="flex flex-col gap-3">
+            <div class="card" style="background:linear-gradient(135deg,rgba(108,92,231,0.08),rgba(253,121,168,0.08));border:none;margin:0;">
+              <div style="font-size:13px;line-height:1.8;">
+                <strong>使用方法：</strong><br>
+                1. 在微信里把链接/图片/文字发给 AI 助手<br>
+                2. 告诉 AI：「提取内容，整理成记录格式」<br>
+                3. 将 AI 整理好的内容粘贴到下方<br>
+                4. 选择标签、补充你的思考<br>
+                5. 保存即可
+              </div>
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">标题</label>
+              <input class="input" id="rTitle" placeholder="记录标题">
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">标签</label>
+              <div class="tag-selector" id="rTagSelector">
+                ${allTags.map(t => `<span class="tag-label tag-color-${t.color}" data-tag="${t.name}" onclick="GrowModule.record.toggleTag(this)">${t.name}</span>`).join('')}
+              </div>
+              <div class="tag-input-row">
+                <input class="input" id="rNewTag" placeholder="新标签..." style="font-size:12px;">
+                <button class="btn btn-sm" onclick="GrowModule.record.addNewTag()">+ 添加</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">内容（粘贴 AI 提取的文字）</label>
+              <textarea class="textarea" id="rContent" placeholder="粘贴 AI 提取整理后的内容..." style="min-height:120px;"></textarea>
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">个人思考</label>
+              <textarea class="textarea" id="rThought" placeholder="写下你的思考..." style="min-height:80px;"></textarea>
+            </div>
+            <div>
+              <label class="text-sm text-secondary mb-2 block">来源链接</label>
+              <input class="input" id="rSource" placeholder="原始链接">
+              <input class="input mt-2" id="rSourceTitle" placeholder="来源说明（如：小红书@樱桃小炸弹）" style="font-size:12px;">
+            </div>
+          </div>
+        `,
+        confirmText: '保存记录',
+        onConfirm: () => {
+          const title = document.getElementById('rTitle').value.trim();
+          const content = document.getElementById('rContent').value.trim();
+          if (!content) { Toast.show('请输入内容', 'error'); return false; }
+          const thought = document.getElementById('rThought').value.trim();
+          const source = document.getElementById('rSource').value.trim();
+          const sourceTitle = document.getElementById('rSourceTitle').value.trim();
+          const tags = Array.from(document.querySelectorAll('#rTagSelector .tag-label.selected')).map(el => el.dataset.tag);
+
+          const records = Store.get('records') || [];
+          records.push({
+            id: Utils.uid(),
+            title, content, thought,
+            source, sourceTitle,
+            tags,
+            images: [],
+            color: ['#6c5ce7','#fd79a8','#00b894','#fdcb6e','#0984e3','#e17055'][Math.floor(Math.random()*6)],
+            source_type: 'ai_import',
             createdAt: new Date().toISOString()
           });
           Store.set('records', records);
@@ -846,70 +1157,6 @@ const GrowModule = {
           return true;
         }
       });
-    },
-
-    view(id) {
-      const records = Store.get('records') || [];
-      const record = records.find(r => r.id === id);
-      if (!record) return;
-
-      Modal.show({
-        title: record.category || '记录',
-        content: `
-          <div class="flex flex-col gap-3">
-            ${record.category ? `<span class="tag tag-success" style="align-self:flex-start;">${record.category}</span>` : ''}
-            <div style="font-size:14px;line-height:1.8;white-space:pre-wrap;">${record.content}</div>
-            ${record.image ? `<img src="${record.image}" style="width:100%;border-radius:8px;">` : ''}
-            <div class="text-xs text-muted">${Utils.formatDate(record.createdAt, 'YYYY-MM-DD HH:mm')}</div>
-          </div>
-        `,
-        confirmText: '编辑',
-        onConfirm: () => { this.edit(id); return true; }
-      });
-    },
-
-    edit(id) {
-      const records = Store.get('records') || [];
-      const record = records.find(r => r.id === id);
-      if (!record) return;
-      const categories = this.getCategories();
-      const defaultCats = ['金句摘抄', '读书笔记', '生活感悟', '工作思考', '日记'];
-
-      Modal.show({
-        title: '编辑记录',
-        content: `
-          <div class="flex flex-col gap-3">
-            <input class="input" id="rCategory" list="rCategoryList" value="${record.category||''}">
-            <datalist id="rCategoryList">${[...new Set([...defaultCats, ...categories])].map(c => `<option value="${c}">`).join('')}</datalist>
-            <textarea class="textarea" id="rContent" style="min-height:150px;">${record.content}</textarea>
-            ${record.image ? `<img src="${record.image}" style="max-width:100%;border-radius:8px;">` : ''}
-            <input type="file" accept="image/*" id="rImage" class="input" onchange="GrowModule.record.previewImage(this)">
-            <img id="rImagePreview" ${record.image ? `src="${record.image}"` : 'style="display:none;"'} style="max-width:100%;border-radius:8px;margin-top:8px;">
-          </div>
-        `,
-        onConfirm: () => {
-          record.content = document.getElementById('rContent').value.trim();
-          record.category = document.getElementById('rCategory').value.trim() || '其他';
-          const img = document.getElementById('rImagePreview');
-          if (img.src && img.style.display !== 'none') record.image = img.src;
-          Store.set('records', records);
-          Toast.show('已更新', 'success');
-          this.render();
-          return true;
-        }
-      });
-    },
-
-    previewImage(input) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.getElementById('rImagePreview');
-        img.src = e.target.result;
-        img.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
     }
   }
 };
