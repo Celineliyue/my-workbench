@@ -1,50 +1,50 @@
 /**
- * App - Ö÷Ó¦ÓÃ¿ò¼Ü
+ * App - ä¸»åº”ç”¨æ¡†æž¶
  */
 const App = {
   currentPage: 'work-calendar',
   sidebarOpen: false,
 
-  // µ¼º½ÅäÖÃ
+  // å¯¼èˆªé…ç½®
   nav: [
     {
-      group: '¹¤×÷Çø',
+      group: 'å·¥ä½œåŒº',
       items: [
-        { id: 'work-calendar', name: 'ÈÕ³Ì±í', icon: '?' },
-        { id: 'work-todo', name: '´ý°ìÇåµ¥', icon: '?' },
-        { id: 'work-knowledge', name: 'ÖªÊ¶¿â', icon: '?' },
+        { id: 'work-calendar', name: 'æ—¥ç¨‹è¡¨', icon: 'ðŸ“…' },
+        { id: 'work-todo', name: 'å¾…åŠžæ¸…å•', icon: 'âœ…' },
+        { id: 'work-knowledge', name: 'çŸ¥è¯†åº“', icon: 'ðŸ“š' },
       ]
     },
     {
-      group: '×ÔÃ½ÌåÔËÓª',
+      group: 'è‡ªåª’ä½“è¿è¥',
       items: [
-        { id: 'media-dashboard', name: 'ÔËÓª¸ÅÀÀ', icon: '?' },
-        { id: 'media-hotspot', name: 'ÈÈµãËÙ±¨', icon: '?' },
-        { id: 'media-topic', name: 'Ñ¡Ìâ¹ÜÀí', icon: '?' },
-        { id: 'media-data', name: 'Êý¾Ý·ÖÎö', icon: '?' },
-        { id: 'media-quarterly', name: '¼¾¶È±¨±í', icon: '??' },
+        { id: 'media-dashboard', name: 'è¿è¥æ¦‚è§ˆ', icon: 'ðŸ“Š' },
+        { id: 'media-hotspot', name: 'çƒ­ç‚¹é€ŸæŠ¥', icon: 'ðŸ”¥' },
+        { id: 'media-topic', name: 'é€‰é¢˜ç®¡ç†', icon: 'ðŸ’¡' },
+        { id: 'media-data', name: 'æ•°æ®åˆ†æž', icon: 'ðŸ“ˆ' },
+        { id: 'media-quarterly', name: 'å­£åº¦æŠ¥è¡¨', icon: 'ðŸ—‚ï¸' },
       ]
     },
     {
-      group: '¸öÈË³É³¤',
+      group: 'ä¸ªäººæˆé•¿',
       items: [
-        { id: 'grow-finance', name: 'Àí²ÆÑ§Ï°', icon: '?' },
-        { id: 'grow-sidehustle', name: '¸±ÒµÌ½Ë÷', icon: '?' },
-        { id: 'grow-reading', name: 'Êé¼®ÔÄ¶Á', icon: '?' },
-        { id: 'grow-record', name: '¼ÇÂ¼¿â', icon: '??' },
+        { id: 'grow-finance', name: 'ç†è´¢å­¦ä¹ ', icon: 'ðŸ’°' },
+        { id: 'grow-sidehustle', name: 'å‰¯ä¸šæŽ¢ç´¢', icon: 'ðŸš€' },
+        { id: 'grow-reading', name: 'ä¹¦ç±é˜…è¯»', icon: 'ðŸ“–' },
+        { id: 'grow-record', name: 'è®°å½•åº“', icon: 'âœï¸' },
       ]
     },
     {
-      group: '¸öÈË¼Æ»®',
+      group: 'ä¸ªäººè®¡åˆ’',
       items: [
-        { id: 'plan-list', name: '¼Æ»®Çåµ¥', icon: '?' },
+        { id: 'plan-list', name: 'è®¡åˆ’æ¸…å•', icon: 'ðŸŽ¯' },
       ]
     },
     {
-      group: 'ÏµÍ³',
+      group: 'ç³»ç»Ÿ',
       items: [
-        { id: 'system-ai', name: 'AIÊ¹ÓÃÖ¸ÄÏ', icon: '?' },
-        { id: 'system-settings', name: 'ÉèÖÃ', icon: '??' },
+        { id: 'system-ai', name: 'AIä½¿ç”¨æŒ‡å—', icon: 'ðŸ¤–' },
+        { id: 'system-settings', name: 'è®¾ç½®', icon: 'âš™ï¸' },
       ]
     }
   ],
@@ -55,7 +55,7 @@ const App = {
     this.renderSidebar();
     this.bindEvents();
 
-    // ÓÅÏÈ´Ó URL hash ¶ÁÈ¡Ò³Ãæ
+    // ä¼˜å…ˆä»Ž URL hash è¯»å–é¡µé¢
     const hashPage = window.location.hash.replace(/^#/, '');
     if (hashPage && this.findNavItem(hashPage)) {
       this.currentPage = hashPage;
@@ -64,7 +64,7 @@ const App = {
     this.navigate(this.currentPage);
     this.checkDailyUpdate();
 
-    // ¼àÌý hash ±ä»¯
+    // ç›‘å¬ hash å˜åŒ–
     window.addEventListener('hashchange', () => {
       const page = window.location.hash.replace(/^#/, '');
       if (page && page !== this.currentPage && this.findNavItem(page)) {
@@ -72,18 +72,18 @@ const App = {
       }
     });
 
-    // ¼ì²éÊÇ·ñÊ×´Î·ÃÎÊ
+    // æ£€æŸ¥æ˜¯å¦é¦–æ¬¡è®¿é—®
     const settings = Store.get('settings');
     if (!settings.lastVisit) {
       setTimeout(() => {
-        Toast.show('»¶Ó­Ê¹ÓÃ¹¤×÷Ì¨£¡Êý¾Ý×Ô¶¯±£´æÔÚ±¾µØ£¬½¨Òé¶¨ÆÚµ¼³ö±¸·Ý ?', 'success', 4000);
+        Toast.show('æ¬¢è¿Žä½¿ç”¨å·¥ä½œå°ï¼æ•°æ®è‡ªåŠ¨ä¿å­˜åœ¨æœ¬åœ°ï¼Œå»ºè®®å®šæœŸå¯¼å‡ºå¤‡ä»½ ðŸ“¥', 'success', 4000);
       }, 500);
     }
     settings.lastVisit = new Date().toISOString();
     Store.set('settings', settings);
   },
 
-  // äÖÈ¾²à±ßÀ¸
+  // æ¸²æŸ“ä¾§è¾¹æ 
   renderSidebar() {
     const nav = document.getElementById('sidebarNav');
     nav.innerHTML = this.nav.map(group => `
@@ -98,7 +98,7 @@ const App = {
       </div>
     `).join('');
 
-    // °ó¶¨µã»÷
+    // ç»‘å®šç‚¹å‡»
     nav.querySelectorAll('.nav-item').forEach(el => {
       el.addEventListener('click', (e) => {
         e.preventDefault();
@@ -112,13 +112,13 @@ const App = {
     });
   },
 
-  // °ó¶¨È«¾ÖÊÂ¼þ
+  // ç»‘å®šå…¨å±€äº‹ä»¶
   bindEvents() {
-    // ²Ëµ¥ÇÐ»»£¨ÒÆ¶¯¶Ë£©
+    // èœå•åˆ‡æ¢ï¼ˆç§»åŠ¨ç«¯ï¼‰
     document.getElementById('menuToggle').addEventListener('click', () => this.toggleSidebar());
     document.getElementById('sidebarOverlay').addEventListener('click', () => this.closeSidebar());
 
-    // Ö÷ÌâÇÐ»»
+    // ä¸»é¢˜åˆ‡æ¢
     document.getElementById('themeToggle').addEventListener('click', () => {
       const settings = Store.get('settings');
       settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
@@ -126,39 +126,39 @@ const App = {
       this.applyTheme();
     });
 
-    // µ¼³öÊý¾Ý
+    // å¯¼å‡ºæ•°æ®
     document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
 
     this.applyTheme();
   },
 
-  // ÇÐ»»Ò³Ãæ
+  // åˆ‡æ¢é¡µé¢
   navigate(pageId) {
     if (!pageId) return;
     this.currentPage = pageId;
 
-    // ¸üÐÂµ¼º½¸ßÁÁ
+    // æ›´æ–°å¯¼èˆªé«˜äº®
     document.querySelectorAll('.nav-item').forEach(el => {
       el.classList.toggle('active', el.dataset.page === pageId);
     });
 
-    // ¸üÐÂ±êÌâ
+    // æ›´æ–°æ ‡é¢˜
     const item = this.findNavItem(pageId);
-    document.getElementById('pageTitle').textContent = item ? `${item.icon} ${item.name}` : '¹¤×÷Ì¨';
+    document.getElementById('pageTitle').textContent = item ? `${item.icon} ${item.name}` : 'å·¥ä½œå°';
 
-    // äÖÈ¾Ò³Ãæ
+    // æ¸²æŸ“é¡µé¢
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const pageEl = document.getElementById('page-' + pageId);
     if (pageEl) {
       pageEl.classList.add('active');
-      // µ÷ÓÃÒ³ÃæäÖÈ¾º¯Êý
+      // è°ƒç”¨é¡µé¢æ¸²æŸ“å‡½æ•°
       if (Pages[pageId] && typeof Pages[pageId].render === 'function') {
         Pages[pageId].render();
       }
     }
   },
 
-  // ²éÕÒµ¼º½Ïî
+  // æŸ¥æ‰¾å¯¼èˆªé¡¹
   findNavItem(id) {
     for (const group of this.nav) {
       const item = group.items.find(i => i.id === id);
@@ -167,15 +167,15 @@ const App = {
     return null;
   },
 
-  // Ó¦ÓÃÖ÷Ìâ
+  // åº”ç”¨ä¸»é¢˜
   applyTheme() {
     const settings = Store.get('settings');
     document.documentElement.setAttribute('data-theme', settings.theme);
     const btn = document.getElementById('themeToggle');
-    btn.textContent = settings.theme === 'dark' ? '??' : '?';
+    btn.textContent = settings.theme === 'dark' ? 'â˜€ï¸' : 'ðŸŒ™';
   },
 
-  // ²à±ßÀ¸ÇÐ»»
+  // ä¾§è¾¹æ åˆ‡æ¢
   toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sidebarOverlay').classList.toggle('active');
@@ -185,24 +185,24 @@ const App = {
     document.getElementById('sidebarOverlay').classList.remove('active');
   },
 
-  // µ¼³öÊý¾Ý
+  // å¯¼å‡ºæ•°æ®
   exportData() {
     const data = Store.exportAll();
     const json = JSON.stringify(data, null, 2);
     Utils.download(`workbench-backup-${Utils.today()}.json`, json, 'application/json');
-    Toast.show(`Êý¾ÝÒÑµ¼³ö (${Store.getSize()} KB)`, 'success');
+    Toast.show(`æ•°æ®å·²å¯¼å‡º (${Store.getSize()} KB)`, 'success');
   },
 
-  // Ã¿ÈÕ¼ì²é
+  // æ¯æ—¥æ£€æŸ¥
   checkDailyUpdate() {
     const today = Utils.today();
     const lastCheck = Store.get('lastDailyCheck');
     if (lastCheck !== today) {
       Store.set('lastDailyCheck', today);
-      // ¿ÉÒÔÔÚÕâÀï´¥·¢Ã¿ÈÕÈÈµã¸üÐÂµÈ
+      // å¯ä»¥åœ¨è¿™é‡Œè§¦å‘æ¯æ—¥çƒ­ç‚¹æ›´æ–°ç­‰
     }
   }
 };
 
-// Æô¶¯
+// å¯åŠ¨
 document.addEventListener('DOMContentLoaded', () => App.init());
